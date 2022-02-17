@@ -1,15 +1,16 @@
+
 var mqtt = require('mqtt');
 
 const FUNCTION_NAME = "poolmanagermqtt";
 // TODO: SET HERE YOUR LOCAL IP
-const IP = "192.168.1.8:1883"
+const IP = "192.168.1.9:1883"
 const LIGHT_TOPIC = "iot/devices/light"
 const COVER_TOPIC = "iot/devices/cover"
 const PHONE_TOPIC = "iot/devices/app"
-const d = new Date();
 
 //Min pool temperature
 const MIN_TEMPERATURE = 10
+//opening and closing hours
 var openHour = new Date("01/01/2011 08:00:00")
 var closeHour = new Date("01/01/2011 22:00:00")
 
@@ -84,13 +85,13 @@ exports.handler = function (context, event) {
 		case "no_sun":
 			topicMessage = _data
 			send_to_two_topic_mqtt(LIGHT_TOPIC, PHONE_TOPIC, topicMessage, topicMessage)
-			context.callback("feedback {temperature: " + temperature + ", cover: " + cover + ", light: " + power + "}")
+			context.callback("feedback {Message: " + topicMessage + "}")
 			break;
 		case "rain":
 		case "not_rain":
 			topicMessage = _data
 			send_to_three_topic_mqtt(COVER_TOPIC, LIGHT_TOPIC, PHONE_TOPIC, topicMessage, topicMessage, topicMessage)
-			context.callback("feedback {temperature: " + temperature + ", cover: " + cover + ", light: " + power + "}")
+			context.callback("feedback {Message: " + topicMessage + "}")
 			break;
 		default:
 			if (!isNaN(_data)) {
@@ -100,32 +101,34 @@ exports.handler = function (context, event) {
 					topicMessage = "low_temp"
 					var message = temperature + "C° " + (temperature * 1.8 + 32) + "F°"
 					send_to_four_topic_mqtt(COVER_TOPIC, LIGHT_TOPIC, PHONE_TOPIC, PHONE_TOPIC, topicMessage, topicMessage, topicMessage, message)
-					context.callback("feedback {temperature: " + temperature + ", cover: " + cover + ", light: " + power + "}")
+			        context.callback("feedback {Message: " + topicMessage + "}")
 
 				}
 				if (temperature > MIN_TEMPERATURE) {
 					var message = temperature + "C° " + (temperature * 1.8 + 32) + "F°"
 					topicMessage = "high_temp"
 					send_to_four_topic_mqtt(COVER_TOPIC, LIGHT_TOPIC, PHONE_TOPIC, PHONE_TOPIC, topicMessage, topicMessage, topicMessage, message)
-					context.callback("feedback {temperature: " + temperature + ", cover: " + cover + ", light: " + power + "}")
+			        context.callback("feedback {Message: " + topicMessage + "}")
 				}
 
 			} else if (_data.indexOf("Time") != -1) {
-				var currentTime =new Date("01/01/2011 " + _data.substr(_data.indexOf(":")+1,) + ":00");
+				var currentTime =new Date( "01/01/2011 " + _data.substr(_data.indexOf(":")+1,) + ":00");
 				if (openHour < currentTime && closeHour > currentTime) {
 					topicMessage = "cover_off"
 					send_to_three_topic_mqtt(COVER_TOPIC, LIGHT_TOPIC, PHONE_TOPIC, topicMessage, topicMessage, topicMessage)
-					context.callback("feedback {temperature: " + temperature + ", cover: " + cover + ", light: " + power + "}")
+		        	context.callback("feedback {Message: " + topicMessage + "}")
 				} else {
 					topicMessage = "cover_on"
 					send_to_three_topic_mqtt(COVER_TOPIC, LIGHT_TOPIC, PHONE_TOPIC, topicMessage, topicMessage, topicMessage)
-					context.callback("feedback {temperature: " + temperature + ", cover: " + cover + ", light: " + power + "}")
+        			context.callback("feedback {Message: " + topicMessage + "}")
 				}
 
 			}
 			break;
 	}
 
+
+}
 
 }
 
