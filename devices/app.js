@@ -16,7 +16,7 @@ var time = "cover_off"
 var sun = "sun"
 var temperature = "null"
 
-var client = mqtt.connect("mqtt://192.168.1.8:1883", {
+var client = mqtt.connect("mqtt://"+ process.env.IP+":1883", {
 	clientId: clientId,
 	username: username,
 	password: password
